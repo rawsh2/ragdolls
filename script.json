@@ -1,0 +1,84 @@
+const { Engine, Render, Runner, World, Bodies, Body, Mouse, MouseConstraint, Constraint } = Matter;
+
+// Create engine and world
+const engine = Engine.create();
+const world = engine.world;
+
+// Renderer setup
+const canvas = document.getElementById("physicsCanvas");
+const render = Render.create({
+    canvas: canvas,
+    engine: engine,
+    options: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        background: "#333",
+        wireframes: false
+    }
+});
+Render.run(render);
+Runner.run(Runner.create(), engine);
+
+// Static floor
+const floor = Bodies.rectangle(window.innerWidth / 2, window.innerHeight - 20, window.innerWidth, 40, { 
+    isStatic: true, 
+    render: { fillStyle: "darkgray" }
+});
+World.add(world, floor);
+
+// Image storage
+const images = {};
+
+// Handle file uploads
+document.querySelectorAll("input[type='file']").forEach(input => {
+    input.addEventListener("change", event => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                images[event.target.id.replace("Upload", "")] = reader.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+// Function to create a ragdoll
+function createRagdoll(x, y) {
+    const head = Bodies.circle(x, y - 80, 20, { render: { sprite: { texture: images.head || "" } } });
+    const torso = Bodies.rectangle(x, y, 40, 60, { render: { sprite: { texture: images.torso || "" } } });
+    const leftArm = Bodies.rectangle(x - 35, y, 15, 50, { render: { sprite: { texture: images.leftArm || "" } } });
+    const rightArm = Bodies.rectangle(x + 35, y, 15, 50, { render: { sprite: { texture: images.rightArm || "" } } });
+    const leftLeg = Bodies.rectangle(x - 15, y + 60, 20, 50, { render: { sprite: { texture: images.leftLeg || "" } } });
+    const rightLeg = Bodies.rectangle(x + 15, y + 60, 20, 50, { render: { sprite: { texture: images.rightLeg || "" } } });
+
+    // Constraints (joints)
+    const constraints = [
+        Constraint.create({ bodyA: head, bodyB: torso, pointA: { x: 0, y: 20 }, pointB: { x: 0, y: -30 }, stiffness: 0.5 }),
+        Constraint.create({ bodyA: torso, bodyB: leftArm, pointA: { x: -20, y: -20 }, pointB: { x: 0, y: -20 }, stiffness: 0.5 }),
+        Constraint.create({ bodyA: torso, bodyB: rightArm, pointA: { x: 20, y: -20 }, pointB: { x: 0, y: -20 }, stiffness: 0.5 }),
+        Constraint.create({ bodyA: torso, bodyB: leftLeg, pointA: { x: -10, y: 30 }, pointB: { x: 0, y: -20 }, stiffness: 0.5 }),
+        Constraint.create({ bodyA: torso, bodyB: rightLeg, pointA: { x: 10, y: 30 }, pointB: { x: 0, y: -20 }, stiffness: 0.5 }),
+    ];
+
+    World.add(world, [head, torso, leftArm, rightArm, leftLeg, rightLeg, ...constraints]);
+}
+
+// Function to spawn blocks
+function spawnBlock() {
+    const width = parseInt(document.getElementById("blockWidth").value) || 50;
+    const height = parseInt(document.getElementById("blockHeight").value) || 50;
+    const x = Math.random() * (window.innerWidth - 100) + 50;
+    const y = 100;
+    const block = Bodies.rectangle(x, y, width, height, { restitution: 0.6, render: { fillStyle: "blue" } });
+    World.add(world, block);
+}
+
+// Mouse control
+const mouse = Mouse.create(render.canvas);
+const mouseConstraint = MouseConstraint.create(engine, { mouse: mouse, constraint: { stiffness: 0.2 } });
+World.add(world, mouseConstraint);
+
+// Event listeners
+document.getElementById("spawnRagdoll").addEventListener("click", () => createRagdoll(window.innerWidth / 2, 200));
+document.getElementById("spawnBlock").addEventListener("click", spawnBlock);

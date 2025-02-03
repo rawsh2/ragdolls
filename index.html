@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ragdoll Physics</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="controls">
+        <input type="file" id="headUpload" accept="image/*"> Head
+        <input type="file" id="torsoUpload" accept="image/*"> Torso
+        <input type="file" id="rightArmUpload" accept="image/*"> Right Arm
+        <input type="file" id="leftArmUpload" accept="image/*"> Left Arm
+        <input type="file" id="rightLegUpload" accept="image/*"> Right Leg
+        <input type="file" id="leftLegUpload" accept="image/*"> Left Leg
+        <button id="spawnRagdoll">Spawn Ragdoll</button>
+        <br>
+        <input type="number" id="blockWidth" placeholder="Width">
+        <input type="number" id="blockHeight" placeholder="Height">
+        <button id="spawnBlock">Spawn Block</button>
+    </div>
+    <canvas id="physicsCanvas"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
